@@ -1,0 +1,195 @@
+<!-- templates/login.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Prijava v Klepet</title>
+    <!-- ---- RAZLAGA: jQuery ----
+    jQuery je JavaScript knjižnica, ki poenostavlja delo z DOM, dogodki, animacijami in AJAX zahtevami
+    Vključimo jo s povezavo do CDN (Content Delivery Network)
+    Več info: https://jquery.com/
+    ---------------------------- -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Dobrodošli v Preprostem Klepetu</h1>
+    
+    <div id="error-message" style="color: red; display: none;"></div>
+    
+    <div id="login-container">
+        <h2>Prijava ali Registracija</h2>
+        <p>Če račun ne obstaja, bo ustvarjen nov.</p>
+        
+        <div>
+            <label for="username">Uporabniško ime:</label>
+            <input type="text" id="username" required>
+        </div>
+        
+        <div>
+            <label for="password">Geslo:</label>
+            <input type="password" id="password" required>
+        </div>
+        
+        <div>
+            <!-- ---- RAZLAGA: onclick atribut ----
+            onclick je dogodkovni atribut HTML elementa
+            Ko uporabnik klikne na element, se izvede JavaScript koda, določena v atributu
+            V tem primeru klic funkcije loginOrRegister()
+            Več info: https://developer.mozilla.org/en-US/docs/Web/API/GlobalEventHandlers/onclick
+            ------------------------------ -->
+            <button onclick="loginOrRegister()">Prijava / Registracija</button>
+        </div>
+    </div>
+    
+    <script>
+        /* ---- RAZLAGA: JavaScript funkcije ----
+        JavaScript funkcije so bloki kode, ki se izvajajo, ko jih pokličemo
+        Definiramo jih s ključno besedo function, sledijo ime funkcije in oklepaji
+        Več info: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Functions
+        ------------------------------------- */
+        function loginOrRegister() {
+            /* ---- RAZLAGA: Vanilla JavaScript vs jQuery ----
+            "Vanilla JavaScript" pomeni uporabo čistega JavaScripta brez knjižnic
+            document.getElementById() je Vanilla JS način dostopa do DOM elementov
+            $("#username") bi bil ekvivalent v jQuery
+            Več info: https://developer.mozilla.org/en-US/docs/Web/API/Document/getElementById
+            -------------------------------------------- */
+            // Pridobi vrednosti iz vnosnih polj z vanilla JS
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+            const errorMessage = document.getElementById('error-message');
+            
+            // Osnovna validacija 
+            // Lahko se doda še dodatna validacija (npr. dolžina uporabniškega imena, gesla)
+            if (username === '' || password === '') {
+                // ZNANJE ZA ZAGOVOR, kaj je textContent, in kaj vse lahko nastavljamo pod style?
+                errorMessage.textContent = 'Uporabniško ime in geslo sta obvezna!';
+                errorMessage.style.display = 'block';
+                return;
+            }
+            
+            // Skrij morebitno prejšnjo napako
+            errorMessage.style.display = 'none';
+            
+            /* ---- RAZLAGA: AJAX in jQuery $.ajax ----
+            AJAX (Asynchronous JavaScript and XML) omogoča pošiljanje zahtev na strežnik brez osveževanja strani
+            jQuery $.ajax() je metoda, ki poenostavlja AJAX zahteve
+            url: ciljna pot na strežniku
+            type: vrsta HTTP zahteve (GET, POST, itd.)
+            data: podatki, ki jih pošljemo strežniku
+            dataType: pričakovana vrsta odgovora (npr. 'json')
+            success: funkcija, ki se pokliče ob uspešni zahtevi
+            error: funkcija, ki se pokliče ob napaki
+            Več info: https://api.jquery.com/jquery.ajax/
+            ------------------------------------- */
+            $.ajax({
+                url: '/login',
+                type: 'POST',
+                data: {
+                    username: username,
+                    password: password
+                },
+                dataType: 'json',
+                success: function(response) {
+                    if (response.success) {
+                        // Preusmeri na stran za klepet
+                        // ZNANJE ZA ZAGOVOR: Kaj naredi window.location.href = '/'?
+                        window.location.href = '/';
+                    } else {
+                        // Prikaži sporočilo o napaki
+                        errorMessage.textContent = response.error;
+                        errorMessage.style.display = 'block';
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Podrobnosti napake:', xhr.responseText);
+                    errorMessage.textContent = 'Prišlo je do napake. Poskusite znova.';
+                    errorMessage.style.display = 'block';
+                }
+            });
+        }
+        
+        /* ---- RAZLAGA: Event Listeners ----
+        addEventListener() doda funkcijo, ki se izvede ob določenem dogodku na elementu
+        Prvi parameter je tip dogodka (npr. 'click', 'keypress')
+        Drugi parameter je funkcija, ki se izvede ob dogodku
+        Več info: https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener
+        -------------------------------- */
+        // Omogoči prijavo s tipko Enter
+        document.getElementById('username').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                loginOrRegister();
+            }
+        });
+        
+        document.getElementById('password').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                loginOrRegister();
+            }
+        });
+        
+        // ----- NALOGA 4 -----
+        // Dodaj funkcionalnost za shranjevanje zadnjega uporabniškega imena
+        // Namig: Uporabi localStorage za shranjevanje uporabniškega imena
+        // in ga avtomatsko vstavi v polje ob naslednjem obisku
+        //
+        // ---- RAZLAGA: localStorage vs. sessionStorage vs. Cookies ----
+        // localStorage: Shranjuje podatke v brskalnik brez časovne omejitve
+        // sessionStorage: Shranjuje podatke za čas seje (dokler je zavihek odprt)
+        // Cookies: Manjše količine podatkov, ki se pošiljajo s HTTP zahtevami
+        //
+        // Največja razlika:
+        // - localStorage in sessionStorage sta dostopna samo preko JavaScripta v brskalniku
+        // - Cookies so dostopni tako v brskalniku kot na strežniku (Flask session uporablja cookies)
+        //
+        // Več info: 
+        // - localStorage: https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage
+        // - Cookies vs localStorage: https://developer.mozilla.org/en-US/docs/Web/API/Document/cookie
+        // -----------------------------------
+        //
+        // Primer začetka implementacije:
+        // function saveUsername(username) {
+        //     // Shrani uporabniško ime v localStorage
+        //     // TODO: Dodaj svojo kodo
+        // }
+        //
+        // function loadSavedUsername() {
+        //     // Naloži shranjeno uporabniško ime, če obstaja
+        //     // TODO: Dodaj svojo kodo
+        // }
+        //
+        // // Pokliči ob nalaganju strani
+        // window.onload = function() {
+        //     // TODO: Dodaj svojo kodo
+        // };
+        // --------------------
+        
+        // ----- NALOGA 5 -----
+        // Dodaj možnost "Zapomni si me", ki ohrani prijavo uporabnika
+        // Namig: Dodaj potrditveno polje in shrani informacije v localStorage
+        //
+        // Primer začetka implementacije:
+        // 1. Najprej dodaj HTML za potrditveno polje pod vnosno polje za geslo:
+        // <div>
+        //    <input type="checkbox" id="remember-me">
+        //    <label for="remember-me">Zapomni si me</label>
+        // </div>
+        //
+        // 2. Nato dodaj funkcije za shranjevanje podatkov za prijavo:
+        // function saveLoginInfo(username, password, remember) {
+        //     if (remember) {
+        //         // Shrani podatke za prijavo
+        //         // TODO: Dodaj svojo kodo
+        //     } else {
+        //         // Počisti shranjene podatke
+        //         // TODO: Dodaj svojo kodo
+        //     }
+        // }
+        // Kako iz JavaScripta preveriti, če je potrditveno polje označeno:
+        // const rememberMe = document.getElementById('remember-me').checked; // true ali false
+        // 3. Spremeni funkcijo loginOrRegister, da upošteva "Zapomni si me":
+        // const rememberMe = document.getElementById('remember-me').checked;
+        // Dodaj klic saveLoginInfo() ob uspešni prijavi
+        // --------------------
+    </script>
+</body>
+</html>

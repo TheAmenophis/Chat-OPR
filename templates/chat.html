@@ -1,0 +1,323 @@
+<!-- templates/chat.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Preprost Klepet</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Preprost Klepet</h1>
+    <!-- ---- RAZLAGA: Jinja2 Templates ----
+    {{ session.username }} je Jinja2 izraz, ki prikaže vrednost spremenljivke iz Flask session
+    Flask uporablja Jinja2 za predloge, ki omogočajo vstavljanje dinamičnih podatkov v HTML
+    Več info: https://jinja.palletsprojects.com/en/3.0.x/templates/
+    ----------------------------------- -->
+    <p>Pozdravljen, <b>{{ session.username }}</b>! <button onclick="logout()">Odjava</button></p>
+    
+    <div id="chat-container">
+        <div id="messages-container" style="height: 300px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px; margin-bottom: 10px;">
+            <!-- Sporočila bodo prikazana tukaj -->
+        </div>
+        
+        <div id="message-form">
+            <input type="text" id="message-input" placeholder="Napiši sporočilo..." style="width: 80%;">
+            <button onclick="sendMessage()">Pošlji</button>
+        </div>
+    </div>
+    
+    <script>
+        /* ---- RAZLAGA: window.onload ----
+        window.onload se sproži, ko se stran v celoti naloži
+        Znotraj funkcije inicializiramo komponente ali opravljamo začetne klice
+        Več info: https://developer.mozilla.org/en-US/docs/Web/API/Window/load_event
+        ------------------------------ */
+        window.onload = function() {
+            loadMessages();
+            
+            /* ---- RAZLAGA: setInterval ----
+            setInterval periodično izvaja funkcijo na določen časovni interval
+            Prvi parameter je funkcija, ki se bo izvajala
+            Drugi parameter je interval v milisekundah (3000ms = 3s)
+            To ustvari preprosto "polling" za nova sporočila
+            Več info: https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/setInterval
+            -------------------------------- */
+            setInterval(loadMessages, 3000);
+        };
+        
+        // Funkcija za nalaganje sporočil
+        function loadMessages() {
+            $.ajax({
+                url: '/get_messages',
+                type: 'GET',
+                dataType: 'json',
+                success: function(messages) {
+                    // Če je klic uspešen, prikaži sporočila
+                    // Sporočila pridejo iz Flaska kot JSON objekt (route /get_messages)
+                    displayMessages(messages);
+                },
+                error: function(xhr, status, error) {
+                    if (xhr.status === 401) {
+                        // Ta status pride iz Flask kode return jsonify(...), 401
+                        window.location.href = '/login';
+                    } else {
+                        console.error('Napaka pri nalaganju sporočil:', error);
+                    }
+                }
+            });
+        }
+        
+        // Funkcija za prikaz sporočil
+        function displayMessages(messages) {
+            /* ---- RAZLAGA: DOM manipulacija ----
+            DOM (Document Object Model) je programski vmesnik za HTML dokumente
+            Z JS lahko dostopamo do elementov DOM in jih spreminjamo
+            container.innerHTML = '' počisti vsebino elementa
+            Več info: https://developer.mozilla.org/en-US/docs/Web/API/Document_Object_Model/Introduction
+            ----------------------------------- */
+            const container = document.getElementById('messages-container');
+            container.innerHTML = '';
+            
+            // JINJA
+            // kar v JS spremenljivko :O
+            // To deluje zato, ker jinja3 zamenja {{ session.username }} z dejansko vrednostjo
+            // Preveri source code v brskalniku
+            const currentUser = "{{ session.username }}";
+            
+            /* ---- RAZLAGA: forEach in funkcije povratnih klicev ----
+            forEach je metoda polja, ki pokliče funkcijo za vsak element polja
+            Funkcija, ki jo podamo kot parameter, se imenuje "callback function"
+            Več info: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/forEach
+            ------------------------------------------------ */
+            messages.forEach(function(message) {
+                const isCurrentUser = message.username === currentUser;
+                
+                /* ---- RAZLAGA: createElement in appendChild ----
+                createElement ustvari nov HTML element
+                appendChild doda element kot otroka drugemu elementu
+                To je način za dinamično ustvarjanje vsebine
+                Več info: 
+                - https://developer.mozilla.org/en-US/docs/Web/API/Document/createElement
+                - https://developer.mozilla.org/en-US/docs/Web/API/Node/appendChild
+                -------------------------------------------- */
+                // razlika med const, let in var
+                // const je konstanta, ki se ne more spreminjati, uporabna za vrednosti, ki se ne spreminjajo
+                // let je spremenljivka, ki se lahko spreminja, uporabna za vrednosti, ki se spreminjajo
+                // var je starejši način definiranja spremenljivk, uporabljaj let in const
+
+                // za vsako sporočilo ustvarimo nov div element
+                const messageDiv = document.createElement('div');
+
+            
+                // elementu moramo dati ime, da lahko kasneje spreminjamo njegove lastnosti
+                messageDiv.className = 'message';
+                messageDiv.style.marginBottom = '10px'; // probaj dodati različne CSS lastnosti
+                
+
+
+                
+                /* ---- RAZLAGA: Template Literals ----
+                Template literals (`) omogočajo večvrstične nize in vključevanje izrazov z ${}
+                So modernejši in čistejši način združevanja nizov in spremenljivk v JS
+                Več info: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals
+                ---------------------------------- */
+
+            
+
+                // napiši zgornjo kodo bolj pregledno brez terinary operatorja
+                // če te zanima vsebina sporočila uporabljaj console.log(message) in preveri v konzoli
+
+
+                // Tukaj preverimo, če je sporočilo od trenutnega uporabnika
+                // Če je, potem sporočilo oblikujemo kot "Ti: sporočilo"
+                // Če ni, potem oblikujemo kot "Uporabnik: sporočilo"
+                // sintaksa ${} je podobna kot v Pythonu f-string
+                // ZNANJE ZA ZAGOVOR: zakaj se spremenljivka isCurrentUser uporablja v tem primeru?
+                 if (isCurrentUser) {
+                     messageDiv.innerHTML = `
+                         <strong> Ti </strong>
+                         <span style="font-size: 0.8em; color: #888;">(${message.timestamp})</span>:
+                       ${message.message}
+                    `;
+                   } else {
+
+                    messageDiv.innerHTML = `
+                        <strong>${message.username}</strong>
+                        <span style="font-size: 0.8em; color: #888;">(${message.timestamp})</span>:
+                        ${message.message}
+                    `;
+                 }
+
+                // na koncu dodamo element v container (messages-container)
+                container.appendChild(messageDiv);
+            });
+            
+            // Pomakni na dno pogovora
+            container.scrollTop = container.scrollHeight;
+        }
+        
+        // Funkcija za pošiljanje sporočil
+        function sendMessage() {
+            const messageInput = document.getElementById('message-input');
+            const messageText = messageInput.value.trim();
+            
+            if (messageText !== '') {
+                $.ajax({
+                    url: '/send_message',
+                    type: 'POST',
+                    data: {
+                        message: messageText
+                    },
+                    dataType: 'json',
+                    success: function(data) {
+                        // Počisti vnos in ponovno naloži sporočila
+                        messageInput.value = ''; // ZNANJE ZA ZAGOVOR: Kaj naredi ta vrstica?
+                        // naložimo sporočila, da se prikaže novo sporočilo
+                        loadMessages();
+                    },
+                    error: function(xhr, status, error) {
+                        // status v Flasku nastavimo z return jsonify(), (401 pomeni neavtoriziran dostop)
+
+                        if (xhr.status === 401) {
+                            // če je status 401, preusmeri na login
+                            window.location.href = '/login';
+                        } else {
+                            console.error('Napaka pri pošiljanju sporočila:', error);
+                        }
+                    }
+                });
+            }
+        }
+        
+        // Funkcija za odjavo
+        function logout() {
+            // Preusmeri na pot za odjavo
+            window.location.href = '/logout';
+        }
+        
+        // Pošlji sporočilo s tipko Enter
+        document.getElementById('message-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+        
+        // ----- NALOGA 6 -----
+        // Dodaj funkcionalnost za "pisanje sporočila..."
+        // Namig: Napiši funkcijo, ki obvesti druge uporabnike,
+        // da trenutni uporabnik tipka sporočilo
+        //
+        // ---- RAZLAGA: Real-time komunikacija v spletu ----
+        // Za pravo real-time komunikacijo bi običajno uporabili WebSockets ali Socket.IO
+        // Ampak lahko simuliramo osnovno funkcionalnost z običajnim AJAX-om
+        // Pristop: Strežniku sporočimo, da uporabnik tipka, in ta informacija se prenese na druge uporabnike
+        // Več info: 
+        // - WebSockets: https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API
+        // - Socket.IO: https://socket.io/
+        // -----------------------------------------------
+        //
+        // Implementacija bi zahtevala:
+        // 1. Novo pot na strežniku za sledenje, kdo tipka
+        // 2. JS funkcijo, ki zazna tipkanje in obvesti strežnik
+        // 3. Prikaz informacije drugim uporabnikom
+        //
+        // Primer začetka implementacije:
+        // let typingTimer;
+        // const doneTypingInterval = 1000; // 1 sekunda
+        //
+        // function userIsTyping() {
+        //     // Obvesti strežnik, da uporabnik tipka
+        //     // TODO: Dodaj AJAX klic na strežnik
+        // }
+        //
+        // function userStoppedTyping() {
+        //     // Obvesti strežnik, da uporabnik ne tipka več
+        //     // TODO: Dodaj AJAX klic na strežnik
+        // }
+        //
+        // document.getElementById('message-input').addEventListener('keyup', function() {
+        //     clearTimeout(typingTimer);
+        //     typingTimer = setTimeout(userStoppedTyping, doneTypingInterval);
+        // Tole pomeni, da se bo userStoppedTyping() poklical 1 sekundo po zadnjem pritisku tipke
+        // });
+        //
+        // document.getElementById('message-input').addEventListener('keydown', function() {
+        //     clearTimeout(typingTimer);
+        //     userIsTyping();
+        // });
+        // --------------------
+        
+        // ----- NALOGA 7 -----
+        // Dodaj možnost za brisanje lastnih sporočil
+        // Namig: Ob svojih sporočilih prikaži gumb za brisanje 
+        // in uporabi AJAX za pošiljanje zahteve na strežnik
+        //
+        // To zahteva spremembe v funkciji displayMessages:
+        // if (isCurrentUser) {
+        //     // Ustvari gumb za brisanje
+        //     const deleteButton = document.createElement('button');
+        //     deleteButton.textContent = 'X';
+        //     deleteButton.onclick = function() {
+        //         // Pokliči funkcijo za brisanje
+        //         deleteMessage(message.id); // Ali drug identifikator sporočila
+        //     };
+        //     messageDiv.appendChild(deleteButton);
+        // }
+        //
+        // Potrebujete tudi funkcijo za pošiljanje zahteve za brisanje:
+        // Namig: v vsak element sporočila dodajte klic funkcije za brisanje z ID-jem sporočila
+        // Sporočila oblikuj kot objekte z ID-jem, ki ga lahko uporabiš za brisanje
+        // Primer pogojevanje, če je sporočilo od uporabnika:
+        // const isCurrentUser = message.username === currentUser;
+        // Dodaj gumb samo svojim sporočilom <button onclick="deleteMessage(${message.id})">X</button>
+        // function deleteMessage(messageId) {
+        //     // TODO: Implementiraj AJAX klic za brisanje sporočila
+        // }
+        // --------------------
+        
+       
+        
+        // ----- NALOGA 8-----
+        // Dodaj iskanje po sporočilih
+        // Namig: Dodaj polje za iskanje in gumb, ki bo
+        // sprožil AJAX zahtevo na ustrezno pot
+        //
+        // 1. Najprej dodaj HTML za iskalnik nad pogovori:
+        // <div id="search-container" style="margin-bottom: 10px;">
+        //     <input type="text" id="search-input" placeholder="Išči sporočila...">
+        //     <button onclick="searchMessages()">Išči</button>
+        // </div>
+        //
+        // 2. Nato napiši funkcijo za iskanje:
+        // function searchMessages() {
+        //     const searchTerm = document.getElementById('search-input').value.trim();
+        //     
+        //     if (searchTerm === '') {
+        //         // Če je iskalni niz prazen, naloži vsa sporočila
+        //         loadMessages();
+        //         return;
+        //     }
+        //     
+        //     // TODO: Implementiraj AJAX klic na strežnik za iskanje
+        //     // Uporabi podatke iz odgovora za prikaz rezultatov
+        // }
+        // --------------------
+        
+        // ----- NALOGA 9 -----
+        // Dodaj nekaj svojega!
+        
+        // ---- BONUS NALOGA 10 -----
+        // Dodaj nekaj svojega!
+
+        // Dodaj vsaj eno dodano vrednost, ki še ni del popularnih klepetalnic (oof)
+
+
+        // Če res nimaš idej:
+        // - Dodaj možnost urejanja sporočil
+        // - Dodaj možnost spreminjanja barve uporabniškega imena
+        // - Dodaj možnost dodajanja slik v sporočila
+        // - Spremeni barvo ozadja glede na nek emoji v sporočilu (recimo luna za dark mode)
+        // - Dodaj možnost anonimnega klepeta
+
+    </script>
+</body>
+</html>
